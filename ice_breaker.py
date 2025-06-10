@@ -2,6 +2,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 import os
 if __name__ =='__main__':
+    print("version")
     print("Hi Langchain")
     print(os.environ['OPENAI_API_KEY'])
 
@@ -25,7 +26,7 @@ In October 2002, eBay acquired PayPal for $1.5 billion, and that same year, with
     )
     llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
 
-    chain = summary_prompt_template | llm
+    chain = summary_prompt_template | llm 
     res = chain.invoke(input={"information": information})
     print(type(res))
     print(res)
