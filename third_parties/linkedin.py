@@ -1,7 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
-
+from ..tools import get_profile_url_tavily
 load_dotenv()
 
 

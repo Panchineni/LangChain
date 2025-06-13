@@ -10,7 +10,7 @@ load_dotenv()
 if __name__ =='__main__':
     print("version")
     print("Hi Langchain")
-    print(os.environ['OPENAI_API_KEY'])
+   # print(os.environ['OPENAI_API_KEY'])
 
    
 
