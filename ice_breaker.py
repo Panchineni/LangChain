@@ -1,44 +1,49 @@
-from langchain_core.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
-from langchain.schema import StrOutputParser
-import os
-import requests
-from third_parties.linkedin import scrape_linkedin_profile
 from dotenv import load_dotenv
+from langchain.prompts.prompt import PromptTemplate
+from langchain_openai import ChatOpenAI
 
-load_dotenv()
-if __name__ =='__main__':
-    print("version")
-    print("Hi Langchain")
-   # print(os.environ['OPENAI_API_KEY'])
+from output_parser import summary_parser
+from third_parties.linkedin import scrape_linkedin_profile
+from agents.linkedin_lookup import lookup as linkedin_lookup_agent
 
-   
+
+
+def ice_break_with(name: str) -> str:
+    linkedin_username = linkedin_lookup_agent(name=name)
+    linkedin_data = scrape_linkedin_profile(
+        linkedin_profile_url=linkedin_username, mock=True
+    )
+
+
 
     summary_template = """
-    given the LinkedIN information {information} about a person I want you to create:
-    1. Name of the user
-    2. Organization the person is working for
-    """
+    given the information about a person from linkedin {information},
+    I want you to create:
+    1. A short summary
+    2. two interesting facts about them 
 
-    summary_prompt_template = PromptTemplate(
-        input_variables=["information"], template=summary_template
-    )
-    llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
-
-    chain = summary_prompt_template | llm | StrOutputParser()
-    linkedin_profile_url = "https://gist.githubusercontent.com/emarco177/859ec7d786b45d8e3e3f688c6c9139d8/raw/32f3c85b9513994c572613f2c8b376b633bfc43f/eden-marco-scrapin.json"
-    response = requests.get(
-        linkedin_profile_url,
-        timeout=10,
-    )
-    """
-    use this when there is api-key available for the scrape_linkedin_profile
-        linkedin_data = scrape_linkedin_profile(
-        linkedin_profile_url="https://www.linkedin.com/in/name_of_user"
-    )
     
+    \n{format_instructions}
     """
-    res = chain.invoke(input={"information": response.json()})
+    summary_prompt_template = PromptTemplate(
+        input_variables=["information"],
+        template=summary_template,
+        partial_variables={
+            "format_instructions": summary_parser.get_format_instructions()
+        },
+    )
+
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
+
+    chain = summary_prompt_template | llm | summary_parser
+
+    res = chain.invoke(input={"information": linkedin_data})
+
     print(res)
 
 
+if __name__ == "__main__":
+    load_dotenv()
+
+    print("Ice Breaker Enter")
+    ice_break_with(name="Harrison Chase")
